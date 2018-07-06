@@ -39,6 +39,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'account',
     'django.contrib.admin',
+    'social_django',
+    'images',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -65,6 +67,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',  # <- Here
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -102,6 +106,9 @@ LOGIN_URL = reverse_lazy('login')
 LOGOUT_URL = reverse_lazy('logout')
 
 
+#SESSION_COOKIE_SECURE = True
+#CSRF_COOKIE_SECURE = True
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
@@ -115,3 +122,15 @@ EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'account.authentication.EmailAuthBackend',
+    'social_core.backends.google.GoogleOAuth2',
+)
+#SOCIAL_AUTH_FACEBOOK_KEY = '609902096045656'
+#SOCIAL_AUTH_FACEBOOK_SECRET = 'a16ec73786d8c09e49e73d0159888849'
+#SOCIAL_AUTH_FACEBOOK_SCOPE = ['reddy.yogeshwar66@gmail.com']
+#SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '332881889078-555s67gls138m0uk3aetp38g9mvhsnj4.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '3w6F2Z455BlZcR3_NKrA-4R8'
