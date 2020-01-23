@@ -1,0 +1,228 @@
+docker -H=192.168.1.5:2375 run nginx  --->for running container from another node/laptop
+docker run --cpus=.5 ubuntu     --->only 50% is allocated at any given time for that particular container from accessing the system's resources.
+docker run --memory=100m ubuntu--->limits 100 mega byte.
+docker system df               --->shows disk usage of image, containers and volumes.
+docker system df -v            --->deeper consumption details.
+
+
+volume mounting by -v verbose(old style):
+docker volume create data_volume(can be anyname for data_volume)
+--->creates data_volume(directory) in /var/lib/docker/volumes as /var/lib/docker/volumes/data_volume.
+docker run -v data_volume:/var/lib/mysql mysql
+--->mounts volume to data_volume in /var/lib/docker/volumes,if there is no data_volume folder it creates and mounts.
+--->full path /var/lib/docker/volumes/data_volume is not required data_volume is enough
+docker run -v /full_path/in_system_host:/var/lib/mysql mysql
+--->mounts volume to some path other than in /var/lib/docker/volumes
+
+
+volume mounting:
+docker volume create data_volume(can be anyname for data_volume)
+docker run -v data_volume:/var/lib/mysql mysql
+-mounts volume to the volumes in /var/lib/docker/volumes.
+bind mounting:
+docker run --mount type=bind,source=/data/mysql,target=/var/lib/mysql mysql
+-mounts to the desired path as mentioned in the command.
+
+docker compose:
+docker run -d --name=redis redis
+docker run -d --name=db postgres:9.4
+docker run -d --name=vote -p 5000:80 --link redis:redis voting-app
+# links creates an entry in voting-app container in cat /etc/hosts as "172.17.0.2 redis conatiner-id"
+docker run -d --name=result -p 5001:80 --link db:db result-app
+docker run -d --name=worker --link redis:redis --link db:db worker
+
+by using docker-compose:
+"""
+redis:
+  image: redis
+db:
+  image: postgres:9.4
+vote:
+  image: voting-app       (can be build: ./vote)#for building image and starting a container
+  ports:
+    - 5000:80
+  links:
+    - redis
+result:
+  image: result-app
+  ports:
+    - 5001:80
+  links:
+    - db
+worker:
+  image: worker
+  links:
+    - redis               (can be redis:redis = redis)
+    - db
+"""
+
+for version:2 docker compose vote container will be
+vote:
+  image: voting-app
+  ports:
+    - 5000:80
+  depends_on:
+    - redis
+
+docker compose version:2 by networking
+"""
+version: 2
+services:
+     redis:
+       image: redis
+       networks:
+           - back-end
+     db:
+       image: postgres:9.4
+       networks:
+           - back-end
+     vote:
+       image: voting-app
+       networks:
+           - front-end
+           - back-end
+     result:
+       image: result-app
+       networks:
+           - front-end
+           - back-end
+     worker:
+       image: worker
+       networks:
+           - back-end
+networks:
+     front-end:
+     back-end:
+"""
+---------------------------------------------------------------------------------------------
+Docker Swarms:
+Managers Majority Fault-Tolerance
+1            1          0 
+2            2          0
+3            2          1
+4            3          1
+5            3          2
+6            4          2
+7            4          3
+
+Quorum of N          = N + 1 /2
+Fault-Tolerance of N = N - 1 /2
+docker swarm:
+#docker node ls
+--->lists swarm master and workers in a cluster.
+#docker swarm init --advertise-addr 192.168.1.12
+--->creates swarm. --advertise-addr 192.168.1.12 is required if u have multiple interfaces.
+--->this generates a command for executing in worker node to join cluster
+#docker swarm join --token <token>
+--->joins into the swarm, this is same as the command generated above for worker node joining into a cluster.
+#docker swarm join-token manager
+--->after executing above command in master this generates a command for executing in new worker node to join cluster as worker
+#docker swarm join-token worker
+--->after executing above command in master this generates a command for executing in new master node to join cluster as master
+#docker swarm leave                              
+--->running this command on worker node(docker-node2) makes that worker node leaves from the cluster and shows that worker is down after executing 'docker node ls' in master node, so to remove from cluster below command is executed in master.
+#docker node rm docker-node2                     
+--->running this command on master node removes docker-node2(hostname) permanently after leave command (as above command).
+
+#docker swarm init --force-new-cluster
+--->if three managers are there and two gets down management can not be done to worker nodes or to that cluster (workers nodes works as it is supposed but it can't be managed like configurations, adding workers to that cluster etc) as majority is 2 when there is three managers, above command is used forcing that cluster with single manager and cluster can be managed and configurations to workers can be done thereafter, and for making another node as managers below command used.
+#docker node promote docker-node2
+--->promotes worker to manager and should be executed in manager node only where docker-node2 is hostname.
+#docker node update --availability drain <node/hostname>
+--->let managers do only managers duty instead having webserver and dis-assigns webserver from <node> if it has.
+
+
+
+Docker Service: (this is used in swarm clusters and executed only in master)
+#docker service create -replicas=3 my-web-server  --->(replica mode)runs on master node, if there is 10 workers it adds only one my-web-server(containers) in random three worker nodes only.
+#docker service create --mode global webserver    --->(global mode)creates webserver in all worker nodes 
+#docker service create image                      --->creates container in worker node without replicas and with random name.
+#docker service create -replicas=3 --name webserver --network frontend -p 8080:80 my-web-server
+--->gives name webserver1,webserver2,webserver3 etc to conatainers if "--name webserver" is provided.
+#docker service update -replicas=4 webserver                     --->updates and gives webserver4 to fourth worker.
+
+docker service --help
+docker service update --help
+docker service ls                                               --->lists containers.
+docker service ps container                                     --->displays container details.
+docker service update container --publish-add 5000:80           --->update port of already created/running container.
+docker service rm container
+
+relicas vs global
+replicas-adds required webserver to the live workers.Not every workers will be alive. 
+global  -adds to every workers.
+
+Networks:
+docker run ubuntu
+#defaut bridge
+docker run ubuntu --network=none
+#not part of network
+docker run ubuntu --network=host
+#corresponds to same network of system host
+
+docker network create --driver overlay --subnet 10.0.9.0/24 my-overlay-network   --->creating a network
+docker service create -replicas=3 --network my-overlay-network my-web-server     --->selecting the created network
+
+Docker stacks:
+"""
+version: 3
+services:
+     redis:
+       image: redis
+       deploy: 
+            replicas: 1
+     db:
+       image: postgres:9.4
+       deploy: 
+            replicas: 1
+            placement:
+                constraints:
+                  - node.hostname == node-master     (deploys on master, if not mentioned it deploys to random node)
+                          (or)
+                  - node.role == master              (deploys on master, if not mentioned it deploys to random node)
+     vote:
+       image: voting-app
+       deploy: 
+            replicas: 1
+     result:
+       image: result-app
+       deploy: 
+            replicas: 1
+            resources:
+                 limits:
+                    cpus: 0.01
+                    memory: 50M
+     worker:
+       image: worker
+       deploy: 
+            replicas: 1
+            placement:
+                constraints:
+                  - node.hostname == node1                    (deploys on node1(hostname), if not mentioned it deploys to random node)
+"""
+docker stack deploy stackname --compose-file docker-stack.yml   (same command for creating and updating)
+
+Docker Registry:
+#docker pull hello-world
+#docker run -d -p 5000:5000 --restart always --name registry registry:2  --->new registry container is created
+#docker tag hello-world localhost:5000/hello-world       --->creates new localhost:5000/hello-world with same id as hello-world
+#docker push localhost:5000/hello-world
+#docker exec -it registry /bin/sh
+#ls /var/lib/registry/docker/registry/v2/repositories --->you can see pushed hello-world image
+
+Docker Registry Fronend:
+sudo docker run \
+  -d \
+  -e ENV_DOCKER_REGISTRY_HOST=registry \     --->mention above registry container
+  -e ENV_DOCKER_REGISTRY_PORT=5000 \         --->mention above registry container port
+  -p 8080:80 \
+  --link registry:registry \
+  konradkleine/docker-registry-frontend:v2
+
+
+extras:
+service-same instance of applications running across multiple nodes is a service-eg:three mongodb containers across multi nodes 
+stack-group of interrelated services that together form a application
+docker info | more
+docket history imagename  --> shows steps/commands run for creating/building the image
+

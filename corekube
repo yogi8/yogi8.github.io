@@ -1,0 +1,216 @@
+API server
+etcd
+kubelet
+container runtime
+controller
+scheduler
+
+core concepts:
+kubectl run conatiner --image image-name
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods
+kubectl get pods -o wide
+
+kubectl delete deployment nginx
+kubectl delete pod nginx
+kubectl describe pod myapp-pod  -->(myapp-pod is pod name used in metadata/name)
+"""
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-demo
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.7.9
+  - name: redis                 -->for creating multiple containers in single pod 
+    image: redis:1.7.9
+"""
+
+kubectl edit pod redis
+kubectl get pod <pod-name> -o yaml > pod-definition.yaml
+-->if definition yaml file is not available, we can generate it by this command and saving to pod-definition.yaml
+replication:
+***
+apiVersion: v1
+kind: ReplicaController
+metadata:
+  name: myapp-rc
+  labels:
+    app: myapp
+    type: frontend
+spec:
+  replicas: 4
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: frontend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+***
+kubectl create -f rc-defintion.yml
+kubectl get replication controller
+***
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: myapp-replicaset
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  replicas: 4
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: front-end             -->should be same as in selector.matchLabels.type
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+  selector:
+    matchLabels:
+        type: frontend              -->should be same as in template.metadata.labels.type 
+***
+kubectl get all
+kubectl create -f replicaset-defintion.yml
+kubectl describe replicaset replicaset-name
+or
+kubectl describe rs replicaset-name           -->crosschecks replicaset file
+kubectl get replicaset
+or
+kubectl get rs                           -->crosschecks replicaset file
+kubectl get rs replicaset-name -o yaml > replicaset-definition.yaml
+-->if definition yaml file is not available, we can generate it by this command and saving to pod-definition.yaml
+kubectl edit replicaset replicaset-name  -->edits in etcd not in file,
+or
+kubectl edit rs replicaset-name
+-->if there is change in image name and edited by above command it doesn't pulls image again/immediately, so we need to delete all pods individually so that replicaset replicates with new pod with new image or we have to delete replicaset and create it again by new yaml file or we can use scale commands "kubectl scale --replicas=6 replicaset myapp-replicaset".  
+kubectl delete replicaset myapp-replicaset        -->also deletes underlying pods
+or
+kubectl delete rs myapp-replicaset        -->also deletes underlying pods
+kubectl replace -f replicaset-defintion.yml
+or
+kubectl scale --replicas=6 -f replicaset-defintion.yml
+or
+kubectl scale --replicas=6 replicaset myapp-replicaset  
+Deployment:
+***
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-replicaset
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  replicas: 4
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: front-end             -->should be same as in selector.matchLabels.type
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+  selector:
+    matchLabels:
+        type: frontend              -->should be same as in template.metadata.labels.type 
+***
+
+
+
+
+
+'''
+Create an NGINX Pod
+
+kubectl run --generator=run-pod/v1 nginx --image=nginx
+
+
+
+Generate POD Manifest YAML file (-o yaml). Don't create it(--dry-run)
+
+kubectl run --generator=run-pod/v1 nginx --image=nginx --dry-run -o yaml
+
+-->it prints yaml file on screen it doesn't create a pod or yaml file. 
+
+
+Create a deployment
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx
+
+Or the newer recommended way:
+
+kubectl create deployment --image=nginx nginx
+
+
+
+Generate Deployment YAML file (-o yaml). Don't create it(--dry-run)
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx --dry-run -o yaml
+
+Or
+
+kubectl create deployment --image=nginx nginx --dry-run -o yaml
+
+
+
+Generate Deployment YAML file (-o yaml). Don't create it(--dry-run) with 4 Replicas (--replicas=4)
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx --dry-run --replicas=4 -o yaml
+
+kubectl create deployment does not have a --replicas option. You could first create it and then scale it using the kubectl scale command.
+
+
+
+Save it to a file - (If you need to modify or add some other details)
+
+kubectl run --generator=deployment/v1beta1 nginx --image=nginx --dry-run --replicas=4 -o yaml > nginx-deployment.yaml
+
+
+
+Create a Service named nginx of type NodePort and expose it on port 30080 on the nodes:
+
+kubectl create service nodeport nginx --tcp=80:80 --node-port=30080 --dry-run -o yaml
+'''
+
+kubectl expose deployment webapp --type=NodePort --port=8080 --name=webapp-service --dry-run -o yaml > webapp-service.yaml
+***
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: webapp
+  name: webapp-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: webapp
+  type: NodePort
+status:
+  loadBalancer: {}
+***
+Deploy a redis pod using the redis:alpine image with the labels set to tier=db.
+kubectl run --generator=run-pod/v1 redis --image=redis:alpine -l tier=db
+
+kubectl expose pod redis --port=6379 --name redis-service
+
+NnameSpace:
+kubectl get namespace
+kubectl get pods --namespace=research
+kubectl run --generator=run-pod/v1 redis --image=redis --namespace=finance
+kubectl get pods --all-namespaces

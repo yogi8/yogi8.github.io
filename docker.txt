@@ -1,0 +1,135 @@
+hypervisors virtualize different os's
+docker containerises only containers os's that are same as host's kernel(linux and windows has different kernel's
+running containers exits if no processes are running in it. 
+docker run image     --->downloads image if its not available locally and runs.
+docker run --name=redis redis
+docker pull image    --->only pulls the image and doesn't run.
+docker run -it image bash ---> logs into the container after running a container, 'exit' commands logout from container
+(-it interactive terminal)
+docker ps            --->listing running containers only.
+docker ps -a         --->listing all containers.
+docker stop id/name  --->stopping a container.
+docker rm id/name    --->removes stopped container.
+docker images        --->lists images.
+docker rmi image     --->remove images.
+docker exec id/name cat /etc/hosts--->executes command in a container without getting into a container.
+docker run image sleep 20--->run for 20 seconds
+docker inspect container   --->gives detailed info of that container.
+tags:
+docker run ubuntu       --->runs latest ubutnu version
+docker run ubuntu:17.04 --->runs ubuntu-17.04 version
+attach and detach:
+docker run -d image---> -d(detach)
+#makes run in background without showing running console(-d used normally in webservers as it avoids getting to system host).
+docker attach container   --->gets into the container by showing running console.
+stdin:
+docker run -i container--->listens to the standard input.
+#if there is input() in code and expects a input data '-i' argument is required 
+port mapping:(examples with running two containers)
+docker run -p 80:5000 container/image--->maps port 80 on system to port 5000 in docker host.
+#192.168.1.5:80 is routed to 172.17.0.2:5000, 192.168.1.5 is host ip, 172.17.0.2 is docker's container ip or docker network
+docker run -p 81:5000 container/image--->maps port 81 on system to port 5000 in docker host.
+#192.168.1.5:81 is routed to 172.17.0.3:5000, 192.168.1.5 is host ip, 172.17.0.3 is docker's container ip or docker network
+volume mapping:
+docker run mysql    --->stores data at /var/lib/mysql in docker host and data gets deleted if that container is removed.
+docker run -v /destination-path/on-system-host:/var/lib/mysql container   --->mounts data in docker host to system host.
+building an image:
+docker build Dockerfile -t custom-name ---> builds an image from a file.
+docker build . -t custom-name          ---> -t is required for specifying name for image
+docker build . -f Dockerfile -t custom-name
+docker build .                         ---> builds image without name
+docker login
+docker push custom-name                ---> pushes our custom created image to dockerhub
+docker history custom-name             ---> shows layers of image it got changed while running a docker build for an image
+
+docker compose:
+docker-compose.yml:
+services:
+     web:
+        image: "image name"
+        ports:
+             - "80:5000"
+     database:
+        image: "mysql"
+        volumes:
+             - /opt/data:/var/lib/mysql
+
+
+docker-compose up   ---> starts the docker.
+docker-compose stop ---> stops
+docker-compose down ---> stops and removes.
+
+adv:
+docker network create\ --driver bridge \ --subnet 182.18.0.0/16 custom-isolated-network
+docker network ls
+docker build Dockerfile -t container   --->docker file
+docker history container               --->installed on that container
+
+
+
+
+
+
+grabbing file https://download.docker.com/linux/centos/docker-ce.repo to /etc/yum.repos.d/docker-ce.repo
+repo saved to /etc/yum.repos.d/docker-ce.repo
+
+
+docker run -it image bash
+docker build .                                 --->builds a container from docker file.
+docker build . -t name(docker name)            --->builds a container from docker file with image name.
+docker build . -t username/name(docker name)   --->docker accounts username used before pushing to repository.
+docker push username/docker                    --->for pushing image to repository.
+docker login                                   --->docker login.
+
+
+Docker build:(commands and arguments)
+valid:
+CMD command param1
+CMD sleep 5
+CMD [“command”, “param1”]
+CMD [“sleep”, “5”]
+
+Not valid:
+CMD [“sleep 5”]
+
+-----------------------------------
+Arguments:
+FROM Ubuntu
+CMD sleep 5
+
+use cases:
+docker run ubuntu-sleeper sleep 10
+docker run ubuntu-sleeper sleep 15
+
+------------------------------------------
+FROM Ubuntu
+ENTRYPOINT [“sleep”]
+
+use cases:
+docker run ubuntu-sleeper 10   ---same as sleep 10
+docker run ubuntu-sleeper 14   ---same as sleep 14
+docker run ubuntu-sleeper      ---if empty "sleep: missing operand Try 'sleep --help' for more information." error rises.
+--------------------------------------------------
+
+FROM Ubuntu
+ENTRYPOINT [“sleep”]
+CMD [“5”]
+
+use cases:
+docker run ubuntu-sleeper                           ---same as sleep 5
+docker run ubuntu-sleeper 10                        ---same as sleep 10
+docker run --entrypoint sleep2.0 ubuntu-sleeper 10  ---same as sleep2.0 10
+-------------------------------------------------------
+docker run -e PYTHOPATH=/home/yogo nginx   -->setting environment variable
+
+
+
+Docker Security:
+-->in docker build file add USER=sam_tally -->for giving access to sam_tally to that image and container
+or
+docker run --user=sam_tally ubuntu
+cat /usr/include/linux/capability.h
+-->by default docker disables few root features for any docker-user
+docker run --cap-add MAC_ADMIN ubuntu -->for adding few feature in that container to that user
+docker run --cap-drop KILL ubuntu     -->for removing few feature in that container to that user
+docker run --priveleged ubuntu        -->giving all priveleges in that container
