@@ -1,0 +1,140 @@
+{
+    "tos": "staging",
+    "tosId": 2742,
+    "command": "execute",
+    "networkServiceId": 762,
+    "netwokServiceName": "ns_sample",
+    "customerId": 1303,
+    "customerName": "Test_Customer",
+    "siteId": 88,
+    "siteName": "GGN01",
+    "nfviType": "cee",
+    "nfviName": "ceev4",
+    "nfviVersion": "4.23",
+    "vnfId": [
+        1
+    ],
+    "vnfName": "ipw",
+    "vnfType": "vIPWORKS",
+    "vnfVersion": "1.10",
+    "parameters": [
+        {
+            "version": "1.0.0",
+            "type": "Networkservice",
+            "data": {
+                "vnfs": [
+                    {
+                        "idVnf": 1,
+                        "vnfname": "Node1",
+                        "udm_vlan": {
+                            "IPW_OM_SP1": {
+                                "vlan_name": "IPW_OM_SP1",
+                                "vlan_id": 1081,
+                                "network_assignment": {
+                                    "Network Address": "10.0.40.240/29",
+                                    "CMXB VRRP": "10.0.40.241",
+                                    "CMXB-0-26": "10.0.40.242",
+                                    "CMXB-0-28": "10.0.40.243",
+                                    "SC VM-1 vNIC": "10.0.40.244",
+                                    "SC VM-2 vNIC": "10.0.40.245",
+                                    "MIP_OAM_IP": "10.0.40.246",
+                                    "Broadcast Address": "10.0.40.247"
+                                },
+                                "vlan_type": "IPW_OM_SP1",
+                                "vr_id": 9
+                            },
+                            "IPW_OM_SP2": {
+                                "vlan_name": "IPW_OM_SP2",
+                                "vlan_id": 1085,
+                                "network_assignment": {
+                                    "Network Address": "10.0.47.184/29",
+                                    "CMXB VRRP": "10.0.47.185",
+                                    "CMXB-0-26": "10.0.47.186",
+                                    "CMXB-0-28": "10.0.47.187",
+                                    "SC VM-1 vNIC": "10.0.47.188",
+                                    "SC VM-2 vNIC": "10.0.47.189",
+                                    "MIP_PROV_IP": "10.0.47.190",
+                                    "Broadcast Address": "10.0.47.191"
+                                },
+                                "vlan_type": "IPW_OM_SP2",
+                                "vr_id": 9
+                            },
+                            "IPW_SIG_SP1": {
+                                "vlan_name": "IPW_SIG_SP1",
+                                "vlan_id": 1086,
+                                "network_assignment": {
+                                    "Network Address": "192.168.134.192/26",
+                                    "CMXB VRRP": "192.168.134.193",
+                                    "CMXB-0-26": "192.168.134.194",
+                                    "CMXB-0-28": "192.168.134.195",
+                                    "PL VM-3 vNIC": "192.168.134.196",
+                                    "PL VM-4 vNIC": "192.168.134.197",
+                                    "PL VM-5 vNIC": "192.168.134.198",
+                                    "PL VM-6 vNIC": "192.168.134.199",
+                                    "Broadcast Address": "192.168.134.255"
+                                },
+                                "vlan_type": "IPW_SIG_SP1",
+                                "vr_id": 9
+                            },
+                            "IPW_DATA_SP1": {
+                                "vlan_name": "IPW_DATA_SP1",
+                                "vlan_id": 1186,
+                                "network_assignment": {
+                                    "Network Address": "192.168.135.192/26",
+                                    "CMXB VRRP": "192.168.135.193",
+                                    "CMXB-0-26": "192.168.135.194",
+                                    "CMXB-0-28": "192.168.135.195",
+                                    "PL VM-3 vNIC": "192.168.135.196",
+                                    "PL VM-4 vNIC": "192.168.135.197",
+                                    "PL VM-5 vNIC": "192.168.135.198",
+                                    "PL VM-6 vNIC": "192.168.135.199",
+                                    "Broadcast Address": "192.168.135.255"
+                                },
+                                "vlan_type": "IPW_DATA_SP1",
+                                "vr_id": 9
+                            }
+                        },
+                        "bsp_enable": true,
+                        "software_version": "389",
+                        "flavour_pl_id": 1625,
+                        "flavour_sc_id": 1625,
+                        "no_of_pl": 12,
+                        "ntp": {
+                            "idNtp": 2385,
+                            "ntpname": "",
+                            "primNtp": "",
+                            "secNtp": "",
+                            "thirdNtp": "",
+                            "fourthNtp": "",
+                            "timezone": ""
+                        },
+                        "timezone": "UTC",
+                        "IPW_OM_SP1": "",
+                        "IPW_OM_SP2": "",
+                        "IPW_SIG_SP1": "",
+                        "IPW_DATA_SP1": "",
+                        "VIP_TRF_IP1": "10.0.64.167",
+                        "VIP_TRF_IP2": "10.0.65.167",
+                        "VIP_SS7_IP1": "10.0.68.167",
+                        "VIP_SS7_IP2": "10.0.69.167",
+                        "VIP_DATA_IP": "10.0.62.168",
+                        "SIG_CN_NLCL_VID": "3991",
+                        "SIG_CN_NLCL_LEFT_IP": "192.168.207.9",
+                        "SIG_CN_NLCL_RIGHT_IP": "192.168.207.10",
+                        "SIG_CN_NLCL_NETMASK": "30",
+                        "SIG_DATA_NLCL_VID": "3996",
+                        "SIG_DATA_NLCL_LEFT_IP": "192.168.207.10",
+                        "SIG_DATA_NLCL_RIGHT_IP": "192.168.207.26",
+                        "SIG_DATA_NLCL_NETMASK": "30",
+                        "OM_CN_VR_LEFT_CMX": "0-26-om_sibb_vr",
+                        "OM_CN_VR_RIGHT_CMX": "0-28-om_sibb_vr",
+                        "SIG_CN_VR_LEFT_CMX": "0-26-sig_cn_sp",
+                        "SIG_CN_VR_RIGHT_CMX": "0-28-sig_cn_sp",
+                        "SIG_DATA_VR_LEFT_CMX": "0-26-sig_data_sp",
+                        "SIG_DATA_VR_RIGHT_CMX": "0-28-sig_data_sp"
+                    }
+                ]
+            }
+        }
+    ],
+    "projectName": "Test_Yogesh"
